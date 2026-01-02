@@ -31,6 +31,7 @@ public class AdminShortcutCommand extends AbstractAsyncCommand {
                 this.addAliases(entry.commandShortcut()[i]);
             }
         }
+        this.setPermissionGroups("OP");
     }
 
     @NonNullDecl

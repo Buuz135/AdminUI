@@ -23,7 +23,7 @@ public class AdminCommand extends AbstractAsyncCommand {
 
     public AdminCommand() {
         super("admin", "Shows all the admin GUIs" );
-        this.setPermissionGroup(GameMode.Creative);
+        this.setPermissionGroups("OP");
     }
 
     @NonNullDecl

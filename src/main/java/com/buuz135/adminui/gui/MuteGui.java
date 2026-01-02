@@ -149,21 +149,6 @@ public class MuteGui extends InteractiveCustomUIPage<MuteGui.SearchGuiData> {
         }
     }
 
-    private void attemptToKickPlayerIfPresent(Ban ban, PlayerRef context, String username, String reason){
-        PlayerRef player = Universe.get().getPlayer(ban.getTarget());
-        if (player != null) {
-            var disconnectReason = "Failed to get disconnect reason.";
-            try {
-                disconnectReason = ban.getDisconnectReason(ban.getTarget()).get().orElse("Failed to get disconnect reason.");
-            } catch (InterruptedException | ExecutionException e) {
-                context.sendMessage(Message.translation("modules.ban.failedDisconnectReason").param("name", username));
-                e.printStackTrace();
-            }
-            player.getPacketHandler().disconnect(disconnectReason);
-            context.sendMessage(Message.translation("modules.ban.bannedWithReason").param("name", username).param("reason", reason));
-        }
-    }
-
     private void buildList(@Nonnull Ref<EntityStore> ref, @Nonnull UICommandBuilder commandBuilder, @Nonnull UIEventBuilder eventBuilder, @Nonnull ComponentAccessor<EntityStore> componentAccessor) {
         HashMap<MuteTracker.Mute, String> itemList = new HashMap<>();
 

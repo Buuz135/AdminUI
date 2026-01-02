@@ -1,0 +1,228 @@
+$C = "../../Common.ui";
+$Nav = "../Nav/Buuz135_AdminUI_TopNavigationBar.ui";
+
+@CustomStyle = TextButtonStyle(
+              Default: (Background: $C.@DefaultSquareButtonDefaultBackground, LabelStyle: $C.@DefaultButtonLabelStyle),
+              Hovered: (Background: $C.@DefaultSquareButtonHoveredBackground, LabelStyle: $C.@DefaultButtonLabelStyle),
+              Pressed: (Background: $C.@DefaultSquareButtonPressedBackground, LabelStyle: $C.@DefaultButtonLabelStyle),
+              Disabled: (Background: $C.@DefaultSquareButtonDisabledBackground, LabelStyle: $C.@DefaultButtonDisabledLabelStyle),
+              Sounds: $C.@ButtonSounds,
+            );
+
+
+$C.@PageOverlay {
+  $Nav.@AdminUITopNavigationBar #AdminUITopNavigationBar {}
+  $C.@Container {
+    Anchor: (Width: 600, Height: 669);
+
+
+    #Title {
+      Group {
+        TextButton #BackButton {
+          Anchor: (Left: 12, Top: 4, Width: 64, Height: 24);
+          Padding: (Left: 8, Top: 2);
+          Text: "< Back";
+          Style: TextButtonStyle(
+            Default: (LabelStyle: (FontSize: 14, TextColor: #93844c, RenderBold: true)),
+            Sounds: $C.@ButtonSounds,
+          );
+          Background: #000000(0.13);
+        }
+        $C.@Title {
+          @Text = "Backups";
+        }
+
+        $C.@HeaderSearch {}
+      }
+    }
+
+    #Content {
+      LayoutMode: Left;
+
+      Group #Main {
+        LayoutMode: Top;
+
+        Group {
+          LayoutMode: Left;
+          Anchor: (Bottom: 2);
+          Label {
+            FlexWeight: 1;
+          }
+
+          $C.@CheckBoxWithLabel #BackupEnabled{
+            @Text = "Automatic Backups";
+            Padding: (Top: 2);
+          }
+
+          Label {
+            FlexWeight: 1;
+          } 
+
+          $C.@TextButton #SaveButton {
+            Anchor: (Left: 10, Height: 28, Right: 4);
+            Padding: (Left: 8, Right: 8, Top: 4, Bottom: 4);
+            Text: "SAVE SETTINGS";
+            Style: @CustomStyle;
+          }
+          $C.@TextButton #CreateButton {
+            Anchor: (Left: 10, Height: 28, Right: 4);
+            Padding: (Left: 8, Right: 8, Top: 4, Bottom: 4);
+            Text: "CREATE BACKUP";
+            Style: @CustomStyle;
+          }
+        }
+
+        Group {
+          LayoutMode: Left;
+
+          Group {
+            FlexWeight: 1;
+            LayoutMode: Top;
+            Anchor: (Right: 10);
+
+            Label {
+              Anchor: ();
+              Style: (
+                FontSize: 18,
+                TextColor: #93844c,
+                 RenderBold: true
+              );
+              Text: "Folder";
+            }
+            
+            $C.@TextField #PathField {
+              FlexWeight: 1;
+              Anchor: (Height: 28);
+              Style: (
+                FontSize: 14,
+                TextColor: #ffffff(0.85)
+              );
+            }
+          }
+
+          Group {
+            FlexWeight: 1;
+            LayoutMode: Top;
+            Anchor: (Right: 10);
+            Group {
+              LayoutMode: Left;
+
+              Label {
+                Anchor: ();
+                Style: (
+                  FontSize: 18,
+                  TextColor: #93844c,
+                  RenderBold: true
+                );
+              
+                Text: "Frequency";
+              }
+              Label {
+                Anchor: (Top: 8, Left: 1);
+                Style: (
+                  FontSize: 10,
+                  TextColor: #93844c,
+                  RenderBold: true
+                );
+                Text: "(in minutes)";
+              }
+        
+            }
+
+            Group {
+              LayoutMode: Left;
+
+              $C.@NumberField #FrequencyField {
+                FlexWeight: 1;
+                Anchor: (Height: 28);
+                Style: (
+                  FontSize: 14,
+                  TextColor: #ffffff(0.85)
+                );
+              }
+            }
+          }
+          Group  {
+            FlexWeight: 1;
+            LayoutMode: Top;
+
+            Label {
+              Anchor: ();
+              Style: (
+                FontSize: 18,
+                TextColor: #93844c,
+                 RenderBold: true
+              );
+              Text: "Retention amount";
+            }
+
+            Group {
+              LayoutMode: Left;
+
+              $C.@NumberField #RetentionField {
+                FlexWeight: 1;
+                Anchor: (Height: 28);
+                Style: (
+                  FontSize: 14,
+                  TextColor: #ffffff(0.85)
+                );
+              }
+            }
+          }
+        }
+
+        Label {
+          Anchor: ();
+          Style: (
+            FontSize: 12,
+            TextColor: #93844c,
+              RenderBold: true
+          );
+          Text: "Backup configuration changes require a server restart to take effect.";
+        }
+
+        Label #WarningLabel {
+          Anchor: ();
+          Style: (
+            FontSize: 12,
+            TextColor: #ad2828,
+              RenderBold: true
+          );
+          Text: "Backup configuration is managed by launch arguments, you can't modify them here.";
+          Visible: false;
+        }
+        
+
+        Group #Separator{
+          Anchor: (Width: 300, Top: 16, Bottom: 10);
+          OutlineColor: #93844c;
+          OutlineSize: 0.5;
+        }
+
+        Label {
+          Anchor: ();
+          Style: (
+            FontSize: 18,
+            TextColor: #93844c,
+            RenderBold: true
+            );
+          Text: "Backups";
+        }
+
+        Group #IndexList {
+          Anchor: (Width: 580, Top: 2);
+          FlexWeight: 1;
+          LayoutMode: TopScrolling;
+          Padding: (Left: 7);
+          ScrollbarStyle: $C.@DefaultScrollbarStyle;
+
+          Group #IndexCards {
+            LayoutMode: Top;
+          }
+        }
+      }
+    }
+  }
+}
+
+$C.@BackButton {}

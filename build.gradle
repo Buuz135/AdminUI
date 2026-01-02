@@ -40,7 +40,7 @@ idea.project.settings.runConfigurations {
     'HytaleServer'(org.jetbrains.gradle.ext.Application) {
         mainClass = 'com.hypixel.hytale.Main'
         moduleName = project.idea.module.name + '.main'
-        programParameters = "--allow-op --disable-sentry --assets=$hytaleHome/$patchline/package/game/latest/Assets.zip --mods=${file("src/main/").absolutePath}  --auth-mode insecure"
+        programParameters = "--allow-op --disable-sentry --assets=$hytaleHome/$patchline/package/game/latest/Assets.zip --mods=${file("src/main/").absolutePath}  --auth-mode insecure --backup-dir=backups"
         workingDirectory = serverRunDir.absolutePath
     }
 }

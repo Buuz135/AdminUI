@@ -3,13 +3,13 @@ package com.buuz135.adminui;
 import com.buuz135.adminui.command.AdminCommand;
 import com.buuz135.adminui.gui.*;
 import com.buuz135.adminui.interaction.AdminStickInteraction;
-import com.buuz135.adminui.util.AdminStickCustomConfig;
-import com.buuz135.adminui.util.MuteTracker;
-import com.buuz135.adminui.util.PlayerTracker;
-import com.buuz135.adminui.util.ReflectionUtil;
+import com.buuz135.adminui.util.*;
 import com.hypixel.hytale.assetstore.event.LoadedAssetsEvent;
 import com.hypixel.hytale.assetstore.map.DefaultAssetMap;
+import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.Options;
 import com.hypixel.hytale.server.core.asset.type.model.config.ModelAsset;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
@@ -21,12 +21,17 @@ import com.hypixel.hytale.server.core.modules.accesscontrol.provider.HytaleWhite
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.hypixel.hytale.server.core.universe.Universe;
+import joptsimple.AbstractOptionSpec;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class AdminUI extends JavaPlugin {
 
@@ -43,6 +48,7 @@ public class AdminUI extends JavaPlugin {
     private PlayerTracker playerTracker;
     private AdminStickCustomConfig adminStickCustomConfig;
     private MuteTracker muteTracker;
+    private BackupConfiguration backupConfiguration;
 
     public AdminUI(@Nonnull JavaPluginInit init) {
         super(init);
@@ -50,6 +56,7 @@ public class AdminUI extends JavaPlugin {
         this.playerTracker = new PlayerTracker();
         this.adminStickCustomConfig = new AdminStickCustomConfig();
         this.muteTracker = new MuteTracker();
+        this.backupConfiguration = new BackupConfiguration();
     }
 
     @Override
@@ -67,10 +74,10 @@ public class AdminUI extends JavaPlugin {
             this.playerTracker.addPlayer(player.getDisplayName(), uuid);
         });
 
-        //ADMIN STICK CONFIG
+        //LOADING FILES
         this.adminStickCustomConfig.syncLoad();
         this.muteTracker.syncLoad();
-
+        this.backupConfiguration.syncLoad();
 
         //ADMIN UI PAGES
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("whitelist", "Whitelists", WhitelistGui::new, true, "wl", "whitelists"));
@@ -79,6 +86,7 @@ public class AdminUI extends JavaPlugin {
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("player", "Players", PlayerGui::new, true, "p", "players"));
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("warps", "Warps", WarpGui::new, true, "w", "warps"));
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("admin-stick", "Admin Stick", AdminStickGui::new, true));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("backup", "Server Backups", BackupGui::new, true, "bk", "backup"));
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("server", "Server Stats", StatsGui::new, true, "st", "stats"));
 
         //PROVIDERS
@@ -101,6 +109,27 @@ public class AdminUI extends JavaPlugin {
             }
         });
 
+        if (!Options.getOptionSet().has(Options.BACKUP)) {
+            if (this.backupConfiguration.isEnabled()) {
+                var optionSet = Options.getOptionSet();
+                var map = (Map<AbstractOptionSpec<?>, List<String>>) ReflectionUtil.getPublic(Map.class, optionSet, "optionsToArguments");
+                map.put((AbstractOptionSpec<?>) Options.BACKUP_MAX_COUNT, List.of(this.backupConfiguration.getRetentionAmount() + ""));
+                map.put((AbstractOptionSpec<?>) Options.BACKUP_DIRECTORY, List.of(this.backupConfiguration.getFolder()));
+                int frequencyMinutes = Math.max(this.backupConfiguration.getBackupFrequency(), 1);
+                this.getLogger().at(Level.INFO).log("Scheduled backup to run every %d minute(s)", frequencyMinutes);
+                HytaleServer.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(() -> {
+                    try {
+                        this.getLogger().at(Level.INFO).log("Backing up universe...");
+                        Universe.get().runBackup().thenAccept((aVoid) -> this.getLogger().at(Level.INFO).log("Completed scheduled backup."));
+                    } catch (Exception e) {
+                        this.getLogger().at(Level.SEVERE).withCause(e).log("Error backing up universe");
+                    }
+
+                }, frequencyMinutes, frequencyMinutes, TimeUnit.MINUTES);
+            }
+        } else {
+            this.getLogger().at(Level.INFO).log("Ignoring scheduled backups as it was enabled with the backup option arguments");
+        }
     }
 
     private static void onModelAssetLoad(LoadedAssetsEvent<String, ModelAsset, DefaultAssetMap<String, ModelAsset>> event) {
@@ -134,4 +163,16 @@ public class AdminUI extends JavaPlugin {
     public MuteTracker getMuteTracker() {
         return muteTracker;
     }
+
+    public BackupConfiguration getBackupConfiguration() {
+        return backupConfiguration;
+    }
+
+    /**
+     * Backup Module:
+     *  Directory : BACKUP_DIRECTORY
+     *  Max Amount: BACKUP_MAX_COUNT
+     *  Frequency: BACKUP_FREQUENCY_MINUTES
+     *  Custom Config
+     */
 }
