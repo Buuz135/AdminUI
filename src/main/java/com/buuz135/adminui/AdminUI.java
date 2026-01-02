@@ -23,6 +23,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,6 +74,7 @@ public class AdminUI extends JavaPlugin {
 
         //ADMIN UI PAGES
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("whitelist", "Whitelists", WhitelistGui::new, true, "wl", "whitelists"));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("mute", "Mutes", MuteGui::new, true, "m", "mute"));
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("ban", "Bans", BanGui::new, true, "b", "bans"));
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("player", "Players", PlayerGui::new, true, "p", "players"));
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("warps", "Warps", WarpGui::new, true, "w", "warps"));
@@ -95,7 +97,7 @@ public class AdminUI extends JavaPlugin {
         this.getEventRegistry().registerGlobal(PlayerChatEvent.class, (event) -> {
             if (this.muteTracker.isMuted(event.getSender().getUuid())) {
                 event.setCancelled(true);
-                event.getSender().sendMessage(Message.raw("You are muted and cannot chat! Reason: " + this.muteTracker.getPlayer(event.getSender().getUuid()).reason()));
+                event.getSender().sendMessage(Message.join(Message.raw("You are muted and cannot chat!").color(Color.RED).bold(true), Message.raw( " Reason: " + this.muteTracker.getPlayer(event.getSender().getUuid()).reason())));
             }
         });
 
@@ -127,5 +129,9 @@ public class AdminUI extends JavaPlugin {
 
     public AdminStickCustomConfig getAdminStickCustomConfig() {
         return adminStickCustomConfig;
+    }
+
+    public MuteTracker getMuteTracker() {
+        return muteTracker;
     }
 }

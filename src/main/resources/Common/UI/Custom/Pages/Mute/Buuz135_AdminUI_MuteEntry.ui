@@ -41,7 +41,6 @@ Group {
         Overscroll: false;
     }
   }
-
   Group {
     LayoutMode: Left;
     Anchor: (Left: 10, Vertical: 0);
@@ -60,7 +59,7 @@ Group {
           RenderBold: false,
           TextColor: #ffffff
       );
-
+      
       Padding: (Right: 2);
     }   
   }
@@ -86,5 +85,29 @@ Group {
 
       Padding: (Right: 2);
     }   
-  }  
+  }
+
+  Group {
+    LayoutMode: Left;
+    Anchor: (Left: 10, Vertical: 0);
+    Label {
+      Anchor: ();
+      Style: (
+        FontSize: 14,
+        TextColor: #93844c,
+          RenderBold: true
+      );
+      Text: "Time Left: ";
+    }
+    Label #TimeLeft {
+      Style: (
+          FontSize: 14,
+          RenderBold: false,
+          TextColor: #ffffff
+      );
+
+      Padding: (Right: 2);
+    }   
+  }
+
 }

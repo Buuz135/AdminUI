@@ -48,7 +48,7 @@ public class MuteTracker extends BlockingDiskFile {
     @Override
     protected void write(BufferedWriter bufferedWriter) throws IOException {
         JsonArray array = new JsonArray();
-        this.muteTracker.forEach(mute -> {
+        this.getMutes().forEach(mute -> {
             var object = new JsonObject();
             object.addProperty("target", mute.target().toString());
             object.addProperty("mutedBy", mute.mutedBy().toString());
@@ -59,9 +59,16 @@ public class MuteTracker extends BlockingDiskFile {
         bufferedWriter.write(array.toString());
     }
 
+    public List<Mute> getMutes() {
+        if (this.muteTracker.removeIf(mute -> mute.until().isBefore(Instant.now()))) {
+            this.syncSave();
+        }
+        return muteTracker;
+    }
+
     @Nullable
     public MuteTracker.Mute getPlayer(UUID uuid){
-        return this.muteTracker.stream().filter(mute -> mute.target().equals(uuid)).findFirst().orElse(null);
+        return this.getMutes().stream().filter(mute -> mute.target().equals(uuid)).findFirst().orElse(null);
     }
 
     public boolean isMuted(UUID uuid){
