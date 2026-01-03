@@ -85,7 +85,7 @@ public class BackupGui extends InteractiveCustomUIPage<BackupGui.SearchGuiData> 
         uiCommandBuilder.set("#RetentionField.Value", this.retentionAmount);
         uiCommandBuilder.set("#RetentionField.IsReadOnly", this.isArgumentEnabled);
         uiCommandBuilder.set("#SaveButton.Visible", !this.isArgumentEnabled);
-        uiCommandBuilder.set("#CreateButton.Visible", !this.isArgumentEnabled);
+        //uiCommandBuilder.set("#CreateButton.Visible", !this.isArgumentEnabled);
         uiCommandBuilder.set("#WarningLabel.Visible", this.isArgumentEnabled);
 
         this.buildList(ref, uiCommandBuilder, uiEventBuilder, store);
