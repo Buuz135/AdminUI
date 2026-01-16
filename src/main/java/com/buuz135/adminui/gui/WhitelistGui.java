@@ -2,6 +2,7 @@ package com.buuz135.adminui.gui;
 
 
 import com.buuz135.adminui.AdminUI;
+import com.buuz135.adminui.util.AuthUtil;
 import com.hypixel.hytale.Main;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
@@ -12,6 +13,7 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.auth.ProfileServiceClient;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
 import com.hypixel.hytale.server.core.ui.builder.EventData;
@@ -19,7 +21,6 @@ import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.server.core.util.AuthUtil;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -77,24 +78,13 @@ public class WhitelistGui extends InteractiveCustomUIPage<WhitelistGui.SearchGui
                 return;
             }
             if (data.button.equals("AddMemberButton")){
-                UUID uuid = null;
-                var playerTracker = AdminUI.getInstance().getPlayerTracker().getPlayer(inputField);
-                if (playerTracker != null){
-                    uuid = playerTracker.uuid();
-                } else {
-                    player.sendMessage(Message.raw("That player hasn't joined the server yet, the whitelist is not reliable"));
-                    try {
-                        uuid = AuthUtil.lookupUuid(inputField).get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                if (uuid == null){
+                ProfileServiceClient.PublicGameProfile profile = AuthUtil.getProfile(inputField);
+                if (profile == null){
                     return;
                 }
-                UUID finalUuid = uuid;
-                if (AdminUI.getInstance().getWhitelistProvider().modify(uuids -> uuids.add(finalUuid))) {
+                if (AdminUI.getInstance().getWhitelistProvider().modify(uuids -> uuids.add(profile.getUuid()))) {
                     AdminUI.getInstance().getWhitelistProvider().syncSave();
+                    AdminUI.getInstance().getPlayerTracker().addPlayer(profile.getUsername(), profile.getUuid());
                     player.sendMessage(Message.translation("server.modules.whitelist.addSuccess").param("name", this.inputField));
                     UICommandBuilder commandBuilder = new UICommandBuilder();
                     UIEventBuilder eventBuilder = new UIEventBuilder();

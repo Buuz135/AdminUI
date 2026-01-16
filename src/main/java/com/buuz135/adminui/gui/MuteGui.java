@@ -2,6 +2,7 @@ package com.buuz135.adminui.gui;
 
 
 import com.buuz135.adminui.AdminUI;
+import com.buuz135.adminui.util.AuthUtil;
 import com.buuz135.adminui.util.DurationParser;
 import com.buuz135.adminui.util.MuteTracker;
 import com.google.protobuf.Duration;
@@ -16,6 +17,7 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.auth.ProfileServiceClient;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
@@ -27,7 +29,6 @@ import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.server.core.util.AuthUtil;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -86,24 +87,13 @@ public class MuteGui extends InteractiveCustomUIPage<MuteGui.SearchGuiData> {
             }
 
             if (data.button.equals("AddToMuteButton")){
-                UUID uuid = null;
-                var playerTracker = AdminUI.getInstance().getPlayerTracker().getPlayer(inputField);
-                if (playerTracker != null){
-                    uuid = playerTracker.uuid();
-                } else {
-                    player.sendMessage(Message.raw("That player hasn't joined the server yet, the mute is not reliable"));
-                    try {
-                        uuid = AuthUtil.lookupUuid(inputField).get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                if (uuid == null){
+                ProfileServiceClient.PublicGameProfile profile = AuthUtil.getProfile(inputField);
+                if (profile == null){
                     return;
                 }
                 var time = DurationParser.parse(durationField);
                 var instant = Instant.now().plusMillis(time);
-                AdminUI.getInstance().getMuteTracker().addMute(new MuteTracker.Mute(uuid, playerRef.getUuid(), instant, reasonField));
+                AdminUI.getInstance().getMuteTracker().addMute(new MuteTracker.Mute(profile.getUuid(), playerRef.getUuid(), instant, reasonField));
                 UICommandBuilder commandBuilder = new UICommandBuilder();
                 UIEventBuilder eventBuilder = new UIEventBuilder();
                 this.buildList(ref, commandBuilder, eventBuilder, store);

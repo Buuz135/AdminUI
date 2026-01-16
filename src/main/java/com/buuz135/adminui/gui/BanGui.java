@@ -2,6 +2,7 @@ package com.buuz135.adminui.gui;
 
 
 import com.buuz135.adminui.AdminUI;
+import com.buuz135.adminui.util.AuthUtil;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
@@ -11,6 +12,7 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.auth.ProfileServiceClient;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
@@ -22,12 +24,11 @@ import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.server.core.util.AuthUtil;
+
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
@@ -73,24 +74,13 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
             }
 
             if (data.button.equals("AddToBanButton")){
-                UUID uuid = null;
-                var playerTracker = AdminUI.getInstance().getPlayerTracker().getPlayer(inputField);
-                if (playerTracker != null){
-                    uuid = playerTracker.uuid();
-                } else {
-                    player.sendMessage(Message.raw("That player hasn't joined the server yet, the ban is not reliable"));
-                    try {
-                        uuid = AuthUtil.lookupUuid(inputField).get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                if (uuid == null){
+                ProfileServiceClient.PublicGameProfile profile = AuthUtil.getProfile(inputField);
+                if (profile == null){
                     return;
                 }
-                UUID finalUuid = uuid;
-                var ban = new InfiniteBan(finalUuid, store.getComponent(ref, UUIDComponent.getComponentType()).getUuid(), Instant.now(), reasonField);
-                if (AdminUI.getInstance().getBanProvider().modify(uuids -> {uuids.put(finalUuid, ban);return true;})) {
+                var ban = new InfiniteBan(profile.getUuid(), store.getComponent(ref, UUIDComponent.getComponentType()).getUuid(), Instant.now(), reasonField);
+                if (AdminUI.getInstance().getBanProvider().modify(uuids -> {uuids.put(profile.getUuid(), ban);return true;})) {
+                    AdminUI.getInstance().getPlayerTracker().addPlayer(profile.getUsername(), profile.getUuid());
                     AdminUI.getInstance().getBanProvider().syncSave();
                     player.sendMessage(Message.translation("server.modules.ban.bannedWithReason").param("name", this.inputField).param("reason", this.reasonField));
                     attemptToKickPlayerIfPresent(ban, playerRef, this.inputField, this.reasonField);

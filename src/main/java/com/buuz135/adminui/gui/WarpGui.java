@@ -27,7 +27,6 @@ import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.server.core.util.AuthUtil;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -87,10 +86,7 @@ public class WarpGui extends InteractiveCustomUIPage<WarpGui.SearchGuiData> {
 
                 assert headRotationComponent != null;
 
-                Vector3d position = transformComponent.getPosition();
-                Vector3f rotation = transformComponent.getRotation();
-                Vector3f headRotation = headRotationComponent.getRotation();
-                Warp newWarp = new Warp(position.getX(), position.getY(), position.getZ(), headRotation.getYaw(), rotation.getPitch(), rotation.getRoll(), inputField.toLowerCase(), player.getWorld(), playerRef.getUsername(), Instant.now());
+                Warp newWarp = new Warp(transformComponent.getTransform(), inputField.toLowerCase(), player.getWorld(), playerRef.getUsername(), Instant.now());
                 TeleportPlugin.get().getWarps().put(newWarp.getId(), newWarp);
                 TeleportPlugin.get().saveWarps();
                 UICommandBuilder commandBuilder = new UICommandBuilder();
