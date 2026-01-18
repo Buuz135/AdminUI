@@ -52,6 +52,12 @@
 @AdminUITopNavigationBar = Group {
    Anchor: (Height: 50, Top: 0);
    Background: #16212f;
+   LayoutMode: Left;
+
+    Group #NavBarLogo {
+      Anchor: (Width: 130, Height: 50, Left: 20, Top: 9, Right: 20, Bottom: 9);
+      Background: "../../admin_ui.png";
+    }
 
    Group #NavBarButtons {
      LayoutMode: Left;
