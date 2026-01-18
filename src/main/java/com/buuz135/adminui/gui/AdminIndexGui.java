@@ -2,6 +2,7 @@ package com.buuz135.adminui.gui;
 
 
 import com.buuz135.adminui.AdminUIIndexRegistry;
+import com.buuz135.adminui.util.PermissionList;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
@@ -18,6 +19,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AdminIndexGui extends InteractiveCustomUIPage<AdminIndexGui.IndexGuiData> {
 
@@ -33,7 +36,9 @@ public class AdminIndexGui extends InteractiveCustomUIPage<AdminIndexGui.IndexGu
         NavBarHelper.setupBar(ref, uiCommandBuilder, uiEventBuilder, store);
         int rowIndex = 0;
         int cardsInCurrentRow = 0;
+        var player = store.getComponent(ref, Player.getComponentType());
         for (AdminUIIndexRegistry.Entry entry : AdminUIIndexRegistry.getInstance().getEntries()) {
+            if(!entry.permission().hasPermission(player)) {continue;}
             if (cardsInCurrentRow == 0) {
                 uiCommandBuilder.appendInline("#IndexCards", "Group { LayoutMode: Left; Anchor: (Bottom: 0); }");
             }

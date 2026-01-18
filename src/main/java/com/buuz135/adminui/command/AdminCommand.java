@@ -2,6 +2,7 @@ package com.buuz135.adminui.command;
 
 
 import com.buuz135.adminui.gui.AdminIndexGui;
+import com.buuz135.adminui.util.PermissionList;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.GameMode;
@@ -23,7 +24,7 @@ public class AdminCommand extends AbstractAsyncCommand {
 
     public AdminCommand() {
         super("admin", "Shows all the admin GUIs" );
-        this.setPermissionGroups("OP");
+        this.requirePermission(PermissionList.OPEN_UI.getPermission());
     }
 
     @NonNullDecl

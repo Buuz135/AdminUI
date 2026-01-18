@@ -43,7 +43,8 @@ public class AdminStickGui extends InteractiveCustomUIPage<AdminStickGui.SearchG
         uiEventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#BackButton", EventData.of("Button", "BackButton"), false);
         var playerRef = store.getComponent(ref, PlayerRef.getComponentType());
         var config = AdminUI.getInstance().getAdminStickCustomConfig().getPlayer(playerRef.getUuid());
-        var entries = AdminUIIndexRegistry.getInstance().getEntries().stream().map(entry -> new DropdownEntryInfo(LocalizableString.fromString(entry.displayName()), entry.id())).collect(Collectors.toList());
+        var player = store.getComponent(ref, Player.getComponentType());
+        var entries = AdminUIIndexRegistry.getInstance().getEntries().stream().filter(e -> e.permission().hasPermission(player)).map(entry -> new DropdownEntryInfo(LocalizableString.fromString(entry.displayName()), entry.id())).collect(Collectors.toList());
         entries.add(0, new DropdownEntryInfo(LocalizableString.fromString("None"), ""));
 
         uiCommandBuilder.set("#Ability1Dropdown.Entries", entries);

@@ -2,6 +2,7 @@ package com.buuz135.adminui.command;
 
 
 import com.buuz135.adminui.AdminUIIndexRegistry;
+import com.buuz135.adminui.util.PermissionList;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.GameMode;
@@ -31,7 +32,7 @@ public class AdminShortcutCommand extends AbstractAsyncCommand {
                 this.addAliases(entry.commandShortcut()[i]);
             }
         }
-        this.setPermissionGroups("OP");
+        this.requirePermission(entry.permission().getPermission());
     }
 
     @NonNullDecl

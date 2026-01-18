@@ -80,14 +80,14 @@ public class AdminUI extends JavaPlugin {
         this.backupConfiguration.syncLoad();
 
         //ADMIN UI PAGES
-        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("whitelist", "Whitelists", WhitelistGui::new, true, "wl", "whitelists"));
-        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("mute", "Mutes", MuteGui::new, true, "m", "mute"));
-        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("ban", "Bans", BanGui::new, true, "b", "bans"));
-        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("player", "Players", PlayerGui::new, true, "p", "players"));
-        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("warps", "Warps", WarpGui::new, true, "w", "warps"));
-        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("admin-stick", "Admin Stick", AdminStickGui::new, true));
-        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("backup", "Server Backups", BackupGui::new, true, "bk", "backup"));
-        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("server", "Server Stats", StatsGui::new, true, "st", "stats"));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("whitelist", "Whitelists", PermissionList.WHITELIST_OPEN_UI, WhitelistGui::new, true, "wl", "whitelists"));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("mute", "Mutes", PermissionList.MUTE_OPEN_UI,MuteGui::new, true, "m", "mute"));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("ban", "Bans", PermissionList.BAN_OPEN_UI, BanGui::new, true, "b", "bans"));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("player", "Players", PermissionList.PLAYER_OPEN_UI, PlayerGui::new, true, "p", "players"));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("warps", "Warps", PermissionList.WARP_OPEN_UI, WarpGui::new, true, "w", "warps"));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("admin-stick", "Admin Stick", PermissionList.ADMIN_STICK_OPEN_UI, AdminStickGui::new, true));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("backup", "Server Backups", PermissionList.BACKUP_OPEN_UI, BackupGui::new, true, "bk", "backup"));
+        AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("server", "Server Stats", PermissionList.STATS_OPEN_UI, StatsGui::new, true, "st", "stats"));
 
         //PROVIDERS
         this.whitelistProvider = ReflectionUtil.getPublic(HytaleWhitelistProvider.class, AccessControlModule.get(), "whitelistProvider");

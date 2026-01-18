@@ -2,6 +2,7 @@ package com.buuz135.adminui;
 
 import com.buuz135.adminui.command.AdminCommand;
 import com.buuz135.adminui.command.AdminShortcutCommand;
+import com.buuz135.adminui.util.PermissionList;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 
@@ -45,6 +46,6 @@ public class AdminUIIndexRegistry {
         return command;
     }
 
-    public record Entry(String id, String displayName, Function<PlayerRef, ? extends InteractiveCustomUIPage<?>> guiSupplier, boolean showsInNavBar, String... commandShortcut) {
+    public record Entry(String id, String displayName, PermissionList permission, Function<PlayerRef, ? extends InteractiveCustomUIPage<?>> guiSupplier, boolean showsInNavBar, String... commandShortcut) {
     }
 }
