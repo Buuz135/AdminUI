@@ -78,6 +78,10 @@ public class StatsGui extends InteractiveCustomUIPage<StatsGui.SearchGuiData> {
 
     private void buildList(@Nonnull Ref<EntityStore> ref, @Nonnull UICommandBuilder commandBuilder, @Nonnull UIEventBuilder eventBuilder, @Nonnull ComponentAccessor<EntityStore> componentAccessor, Player player) {
         OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+        var loadAverage = operatingSystemMXBean.getSystemLoadAverage();
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+        var memoryUsage = memoryMXBean.getHeapMemoryUsage();
         if (operatingSystemMXBean instanceof com.sun.management.OperatingSystemMXBean sunOSBean) {
             var systemCpuLoad = sunOSBean.getSystemCpuLoad();
             var processCpuLoad = sunOSBean.getProcessCpuLoad();
@@ -93,13 +97,10 @@ public class StatsGui extends InteractiveCustomUIPage<StatsGui.SearchGuiData> {
             commandBuilder.set("#AllRamUsage.Text", FormatUtil.bytesToString(used));
             commandBuilder.set("#MaxAllRamUsage.Text", FormatUtil.bytesToString(sunOSBean.getTotalMemorySize()));
         }
-        var loadAverage = operatingSystemMXBean.getSystemLoadAverage();
+        if (!(player.getPageManager().getCustomPage() instanceof StatsGui)) return;
         commandBuilder.set("#LoadAverageCPUUsage.Text", loadAverage < 0 ? "Unknown" : ((int)(loadAverage*100)) + "%");
         commandBuilder.set("#LoadAverageCPUUsageBar.Value", loadAverage);
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         commandBuilder.set("#ProcessUptime.Text", FormatUtil.timeUnitToString(runtimeMXBean.getUptime(), TimeUnit.MILLISECONDS));
-        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-        var memoryUsage = memoryMXBean.getHeapMemoryUsage();
         commandBuilder.set("#ServerRamUsageBar.Value", memoryUsage.getUsed() / (double) memoryUsage.getMax());
         commandBuilder.set("#ServerRamUsage.Text", FormatUtil.bytesToString(memoryUsage.getUsed()));
         commandBuilder.set("#MaxServerRamUsage.Text", FormatUtil.bytesToString(memoryUsage.getMax()));
