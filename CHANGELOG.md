@@ -1,6 +1,7 @@
 # 1.0.5
 
 * Improved player list for multiworld setups, closes #15
+* Fixed warps following the players, closes #12
 
 # 1.0.4
 

@@ -86,7 +86,7 @@ public class WarpGui extends InteractiveCustomUIPage<WarpGui.SearchGuiData> {
 
                 assert headRotationComponent != null;
 
-                Warp newWarp = new Warp(transformComponent.getTransform(), inputField.toLowerCase(), player.getWorld(), playerRef.getUsername(), Instant.now());
+                Warp newWarp = new Warp(transformComponent.getTransform().clone(), inputField.toLowerCase(), player.getWorld(), playerRef.getUsername(), Instant.now());
                 TeleportPlugin.get().getWarps().put(newWarp.getId(), newWarp);
                 TeleportPlugin.get().saveWarps();
                 UICommandBuilder commandBuilder = new UICommandBuilder();
