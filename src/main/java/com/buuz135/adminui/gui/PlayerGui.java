@@ -83,82 +83,83 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
     }
 
     @Override
-    public void handleDataEvent(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store, @Nonnull SearchGuiData data) {
-        super.handleDataEvent(ref, store, data);
-        var playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-        var player = store.getComponent(ref, Player.getComponentType());
-        if (NavBarHelper.handleData(ref, store, data.navbar, () -> {})) {
+    public void handleDataEvent(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> storePrivate, @Nonnull SearchGuiData data) {
+        super.handleDataEvent(ref, storePrivate, data);
+        var playerRef = storePrivate.getComponent(ref, PlayerRef.getComponentType());
+        var player = storePrivate.getComponent(ref, Player.getComponentType());
+        if (NavBarHelper.handleData(ref, storePrivate, data.navbar, () -> {})) {
             return;
         }
         if (data.button != null) {
             if (data.button.equals("BackButton")) {
-                player.getPageManager().openCustomPage(ref, store, new AdminIndexGui(playerRef, CustomPageLifetime.CanDismiss));
+                player.getPageManager().openCustomPage(ref, storePrivate, new AdminIndexGui(playerRef, CustomPageLifetime.CanDismiss));
                 return;
             }
             if (data.button.equals("Heal")) {
-                heal(store, UUID.fromString(data.uuid));
+                heal(UUID.fromString(data.uuid));
             }
             if (data.button.equals("Kill")) {
-                kill(store, UUID.fromString(data.uuid));
+                kill(UUID.fromString(data.uuid));
             }
             if (data.button.equals("Inventory")) {
-                inventory(store, UUID.fromString(data.uuid));
+                inventory(storePrivate, UUID.fromString(data.uuid));
             }
             if (data.button.equals("Kick")) {
-                kick(store, UUID.fromString(data.uuid));
+                kick(UUID.fromString(data.uuid));
             }
             if (data.button.equals("Ban")) {
-                ban(store, UUID.fromString(data.uuid));
+                ban(storePrivate, UUID.fromString(data.uuid));
             }
             if (data.button.equals("GamemodeDropdown")) {
                 var uuid = UUID.fromString(data.uuid);
                 var gamemode = GameMode.valueOf(data.dropdownValue);
-                Player.setGameMode(Universe.get().getPlayer(uuid).getReference(), gamemode, store);
+                var otherReference = Universe.get().getPlayer(uuid).getReference();
+                Player.setGameMode(ref, gamemode, ref.getStore());
             }
             if (data.button.equals("ModelDropdown")) {
                 var uuid = UUID.fromString(data.uuid);
                 var model = AdminUI.MODELS.get(data.dropdownValue);
                 var otherReference = Universe.get().getPlayer(uuid).getReference();
-                store.putComponent(otherReference, ModelComponent.getComponentType(), new ModelComponent(Model.createScaledModel(model, model.generateRandomScale())));
-                store.getComponent(otherReference, PlayerSkinComponent.getComponentType()).consumeNetworkOutdated();
+                otherReference.getStore().putComponent(otherReference, ModelComponent.getComponentType(), new ModelComponent(Model.createScaledModel(model, model.generateRandomScale())));
+                otherReference.getStore().getComponent(otherReference, PlayerSkinComponent.getComponentType()).consumeNetworkOutdated();
             }
             if (data.button.equals("ResetModel")) {
                 var uuid = UUID.fromString(data.uuid);
                 var otherReference = Universe.get().getPlayer(uuid).getReference();
-                PlayerSkinComponent playerSkinComponent = store.getComponent(otherReference, PlayerSkinComponent.getComponentType());
+                PlayerSkinComponent playerSkinComponent = otherReference.getStore().getComponent(otherReference, PlayerSkinComponent.getComponentType());
                 CosmeticsModule cosmeticsModule = CosmeticsModule.get();
                 Model newModel = cosmeticsModule.createModel(playerSkinComponent.getPlayerSkin());
-                store.putComponent(otherReference, ModelComponent.getComponentType(), new ModelComponent(newModel));
+                otherReference.getStore().putComponent(otherReference, ModelComponent.getComponentType(), new ModelComponent(newModel));
                 playerSkinComponent.setNetworkOutdated();
             }
             if (data.button.equals("TeleportTo")){
                 var uuid = UUID.fromString(data.uuid);
                 var otherReference = Universe.get().getPlayer(uuid).getReference();
-                var positionTo = store.getComponent(otherReference, TransformComponent.getComponentType());
-                teleport(store, store.getComponent(playerRef.getReference(), UUIDComponent.getComponentType()).getUuid(), new Teleport(store.getComponent(otherReference, Player.getComponentType()).getWorld(), positionTo.getPosition(), positionTo.getRotation()));
+                var positionTo = otherReference.getStore().getComponent(otherReference, TransformComponent.getComponentType());
+                teleport(storePrivate.getComponent(playerRef.getReference(), UUIDComponent.getComponentType()).getUuid(), new Teleport(otherReference.getStore().getComponent(otherReference, Player.getComponentType()).getWorld(), positionTo.getPosition(), positionTo.getRotation()));
             }
             if (data.button.equals("TeleportHere")){
                 var uuid = UUID.fromString(data.uuid);
-                var positionHere = store.getComponent(playerRef.getReference(), TransformComponent.getComponentType());
-                teleport(store, uuid, new Teleport(player.getWorld(), positionHere.getPosition(), positionHere.getRotation()));
+                var positionHere = storePrivate.getComponent(playerRef.getReference(), TransformComponent.getComponentType());
+                teleport(uuid, new Teleport(player.getWorld(), positionHere.getPosition(), positionHere.getRotation()));
             }
             if (data.button.equals("KillAllButton")){
                 for (PlayerRef player1 : Universe.get().getPlayers()) {
                     if (player1.getUuid().equals(playerRef.getUuid())) continue;
-                    kill(store, player1.getUuid());
+                    kill(player1.getUuid());
                 }
             }
             if (data.button.equals("TeleportAllButton")){
                 for (PlayerRef player1 : Universe.get().getPlayers()) {
                     if (player1.getUuid().equals(playerRef.getUuid())) continue;
-                    var positionHere = store.getComponent(ref, TransformComponent.getComponentType());
-                    teleport(store, player1.getUuid(), new Teleport(player.getWorld(), positionHere.getPosition(), positionHere.getRotation()));
+                    var positionHere = storePrivate.getComponent(ref, TransformComponent.getComponentType());
+                    teleport(player1.getUuid(), new Teleport(player.getWorld(), positionHere.getPosition(), positionHere.getRotation()));
                 }
             }
             if (data.button.equals("KickAllButton")){
                 for (PlayerRef player1 : Universe.get().getPlayers()) {
                     if (player1.getUuid().equals(playerRef.getUuid())) continue;
-                    kick(store, player1.getUuid());
+                    kick(player1.getUuid());
                 }
             }
             if (data.button.equals("ToggleExpanded")){
@@ -175,7 +176,7 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
         }
         UICommandBuilder commandBuilder = new UICommandBuilder();
         UIEventBuilder eventBuilder = new UIEventBuilder();
-        this.buildList(ref, commandBuilder, eventBuilder, store);
+        this.buildList(ref, commandBuilder, eventBuilder, storePrivate);
         this.sendUpdate(commandBuilder, eventBuilder, false);
     }
 
@@ -195,7 +196,7 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
 
             }
         }
-        this.buildButtons(visibleItems, commandBuilder, eventBuilder, store);
+        this.buildButtons(visibleItems, commandBuilder, eventBuilder);
     }
 
     @Override
@@ -203,7 +204,7 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
         super.close();
     }
 
-    private void buildButtons(List<String> items,  @Nonnull UICommandBuilder uiCommandBuilder, @Nonnull UIEventBuilder eventBuilder, @Nonnull Store<EntityStore> store) {
+    private void buildButtons(List<String> items,  @Nonnull UICommandBuilder uiCommandBuilder, @Nonnull UIEventBuilder eventBuilder) {
         uiCommandBuilder.clear("#IndexCards");
         uiCommandBuilder.appendInline("#Main #IndexList", "Group #IndexCards { LayoutMode: Left; }");
         var gamemodes = Arrays.stream(GameMode.values()).map(mode -> new DropdownEntryInfo(LocalizableString.fromString(mode.name()), mode.name())).collect(Collectors.toList());
@@ -212,6 +213,7 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
         for (String name : items) {
             var playerRef = Universe.get().getPlayer(name, NameMatching.EXACT);
             if (playerRef == null || !playerRef.isValid() || playerRef.getReference() == null) continue;
+            var store = playerRef.getReference().getStore();
             var player = store.getComponent(playerRef.getReference(), Player.getComponentType());
             var entityStatMap = store.getComponent(playerRef.getReference(), EntityStatsModule.get().getEntityStatMapComponentType());
             var health = EntityStatType.getAssetMap().getIndex("Health");
@@ -265,8 +267,10 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
         }
     }
 
-    public void heal(Store<EntityStore> store, UUID uuid){
+    public void heal(UUID uuid){
         var entity = Universe.get().getPlayer(uuid);
+        if (entity == null || !entity.isValid()) return;
+        var store = entity.getReference().getStore();
         var entityStatMap = store.getComponent(entity.getReference(), EntityStatsModule.get().getEntityStatMapComponentType());
         var health = EntityStatType.getAssetMap().getIndex("Health");
         var stamina = EntityStatType.getAssetMap().getIndex("Stamina");
@@ -276,40 +280,50 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
         entityStatMap.setStatValue(stamina, staminaStatValue.getMax());
     }
 
-    public void kill(Store<EntityStore> store, UUID uuid){
+    public void kill(UUID uuid){
         var entity = Universe.get().getPlayer(uuid);
+        if (entity == null || !entity.isValid()) return;
+        var store = entity.getReference().getStore();
         Damage.Source damageSource = new Damage.EnvironmentSource("ADMIN");
         DeathComponent.tryAddComponent(store, entity.getReference(), new Damage(damageSource, DamageCause.COMMAND, (float)Integer.MAX_VALUE));
     }
 
-    public void inventory(Store<EntityStore> store, UUID uuid){
+    public void inventory(Store<EntityStore> ownerStore, UUID uuid){
         var entity = Universe.get().getPlayer(uuid);
+        if (entity == null || !entity.isValid()) return;
+        var store = entity.getReference().getStore();
         var ref = entity.getReference();
         var targetPlayerComponent = store.getComponent(ref, Player.getComponentType());
         CombinedItemContainer targetInventory = targetPlayerComponent.getInventory().getCombinedHotbarFirst();
         ItemContainer targetItemContainer = targetInventory;
-        var owner = store.getComponent(this.playerRef.getReference(), Player.getComponentType());
-        owner.getPageManager().setPageWithWindows(ref, store, Page.Bench, true, new Window[]{new ContainerWindow(targetItemContainer)});
+        var owner = ownerStore.getComponent(this.playerRef.getReference(), Player.getComponentType());
+        owner.getPageManager().setPageWithWindows(ref, ownerStore, Page.Bench, true, new Window[]{new ContainerWindow(targetItemContainer)});
     }
 
-    public void kick(Store<EntityStore> store, UUID uuid){
+    public void kick(UUID uuid){
         var entity = Universe.get().getPlayer(uuid);
+        if (entity == null || !entity.isValid()) return;
+        var store = entity.getReference().getStore();
         var ref = entity.getReference();
         var playerRef = store.getComponent(ref, PlayerRef.getComponentType());
         playerRef.getPacketHandler().disconnect("You were kicked by an admin.");
     }
 
-    public void teleport(Store<EntityStore> store, UUID uuid, Teleport teleport){
+    public void teleport(UUID uuid, Teleport teleport){
         var entity = Universe.get().getPlayer(uuid);
+        if (entity == null || !entity.isValid()) return;
+        var store = entity.getReference().getStore();
         var ref = entity.getReference();
         store.putComponent(ref, Teleport.getComponentType(), teleport);
     }
 
-    public void ban(Store<EntityStore> store, UUID uuid){
+    public void ban(Store<EntityStore> ownerStore, UUID uuid){
         var entity = Universe.get().getPlayer(uuid);
+        if (entity == null || !entity.isValid()) return;
+        var store = entity.getReference().getStore();
         var ref = entity.getReference();
 
-        var ban = new InfiniteBan(uuid, store.getComponent(this.playerRef.getReference(), UUIDComponent.getComponentType()).getUuid(), Instant.now(), "You were banned by an admin.");
+        var ban = new InfiniteBan(uuid, ownerStore.getComponent(this.playerRef.getReference(), UUIDComponent.getComponentType()).getUuid(), Instant.now(), "You were banned by an admin.");
         if (AdminUI.getInstance().getBanProvider().modify(uuids -> {uuids.put(uuid, ban);return true;})) {
             var playerRef = store.getComponent(ref, PlayerRef.getComponentType());
             playerRef.getPacketHandler().disconnect("You were banned by an admin.");

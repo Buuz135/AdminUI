@@ -1,3 +1,7 @@
+# 1.0.5
+
+* Improved player list for multiworld setups, closes #15
+
 # 1.0.4
 
 * Properly configured permission, now the admin screen and the nav bar will hide the entries if the player doesn't have the permission, closes #2
