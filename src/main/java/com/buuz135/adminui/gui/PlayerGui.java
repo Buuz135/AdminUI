@@ -114,7 +114,7 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
                 var uuid = UUID.fromString(data.uuid);
                 var gamemode = GameMode.valueOf(data.dropdownValue);
                 var otherReference = Universe.get().getPlayer(uuid).getReference();
-                Player.setGameMode(ref, gamemode, ref.getStore());
+                Player.setGameMode(otherReference, gamemode, ref.getStore());
             }
             if (data.button.equals("ModelDropdown")) {
                 var uuid = UUID.fromString(data.uuid);
