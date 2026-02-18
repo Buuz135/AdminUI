@@ -1,3 +1,8 @@
+# 1.0.6
+
+* Fixed gamemode dropdown targetting the wrong person, closes #18
+* Increased server version
+
 # 1.0.5
 
 * Improved player list for multiworld setups, closes #15
