@@ -121,7 +121,7 @@ public class MuteGui extends InteractiveCustomUIPage<MuteGui.SearchGuiData> {
                 var uuid = UUID.fromString(split[1]);
                 AdminUI.getInstance().getMuteTracker().getMutes().removeIf(mute -> mute.target().equals(uuid));
                 AdminUI.getInstance().getMuteTracker().syncSave();
-                player.sendMessage(Message.raw("Unmuted player " + uuid));
+                playerRef.sendMessage(Message.raw("Unmuted player " + uuid));
                 this.requestingConfirmation = -1;
             }
             UICommandBuilder commandBuilder = new UICommandBuilder();

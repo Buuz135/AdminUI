@@ -71,7 +71,7 @@ public class AdminUI extends JavaPlugin {
         this.getEventRegistry().registerGlobal(PlayerConnectEvent.class, (event) -> {
             var player = event.getHolder().getComponent(Player.getComponentType());
             var uuid = event.getHolder().getComponent(UUIDComponent.getComponentType()).getUuid();
-            this.playerTracker.addPlayer(player.getDisplayName(), uuid);
+            this.playerTracker.addPlayer(player.getPlayerRef().getUsername(), uuid);
         });
 
         //LOADING FILES

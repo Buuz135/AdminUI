@@ -238,9 +238,9 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
             uiCommandBuilder.set("#IndexCards[" + i + "] #IsWhitelisted.Visible", AdminUI.getInstance().getWhitelistProvider().getList().contains(uuid));
             uiCommandBuilder.set("#IndexCards[" + i + "] #HealthValue.Text", ((int)entityStatMap.get(health).asPercentage() * 100) + "%" );
             uiCommandBuilder.set("#IndexCards[" + i + "] #WorldValue.Text", player != null && player.getWorld() != null ? player.getWorld().getName() : "Unknown");
-            uiCommandBuilder.set("#IndexCards[" + i + "] #XValue.Text", (int) position.getPosition().getX() +"");
-            uiCommandBuilder.set("#IndexCards[" + i + "] #YValue.Text", (int) position.getPosition().getY() +"");
-            uiCommandBuilder.set("#IndexCards[" + i + "] #ZValue.Text", (int) position.getPosition().getZ() +"");
+            uiCommandBuilder.set("#IndexCards[" + i + "] #XValue.Text", (int) position.getPosition().x() +"");
+            uiCommandBuilder.set("#IndexCards[" + i + "] #YValue.Text", (int) position.getPosition().y() +"");
+            uiCommandBuilder.set("#IndexCards[" + i + "] #ZValue.Text", (int) position.getPosition().z() +"");
             eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#IndexCards[" + i + "] #TeleportToButton", EventData.of("Button", "TeleportTo").append("UUID", uuid.toString()), false);
 
 
@@ -306,7 +306,7 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
         var store = entity.getReference().getStore();
         var ref = entity.getReference();
         var playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-        playerRef.getPacketHandler().disconnect("You were kicked by an admin.");
+        playerRef.getPacketHandler().disconnect(Message.raw("You were kicked by an admin."));
     }
 
     public void teleport(UUID uuid, Teleport teleport){
@@ -326,7 +326,7 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
         var ban = new InfiniteBan(uuid, ownerStore.getComponent(this.playerRef.getReference(), UUIDComponent.getComponentType()).getUuid(), Instant.now(), "You were banned by an admin.");
         if (AdminUI.getInstance().getBanProvider().modify(uuids -> {uuids.put(uuid, ban);return true;})) {
             var playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-            playerRef.getPacketHandler().disconnect("You were banned by an admin.");
+            playerRef.getPacketHandler().disconnect(Message.raw("You were kicked by an admin."));
         }
     }
 

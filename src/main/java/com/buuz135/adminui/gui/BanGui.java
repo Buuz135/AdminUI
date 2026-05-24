@@ -82,7 +82,7 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
                 if (AdminUI.getInstance().getBanProvider().modify(uuids -> {uuids.put(profile.getUuid(), ban);return true;})) {
                     AdminUI.getInstance().getPlayerTracker().addPlayer(profile.getUsername(), profile.getUuid());
                     AdminUI.getInstance().getBanProvider().syncSave();
-                    player.sendMessage(Message.translation("server.modules.ban.bannedWithReason").param("name", this.inputField).param("reason", this.reasonField));
+                    playerRef.sendMessage(Message.translation("server.modules.ban.bannedWithReason").param("name", this.inputField).param("reason", this.reasonField));
                     attemptToKickPlayerIfPresent(ban, playerRef, this.inputField, this.reasonField);
                     UICommandBuilder commandBuilder = new UICommandBuilder();
                     UIEventBuilder eventBuilder = new UIEventBuilder();
@@ -110,7 +110,7 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
                 var uuid = UUID.fromString(split[1]);
                 AdminUI.getInstance().getBanProvider().modify(uuids -> uuids.remove(uuid) != null);
                 AdminUI.getInstance().getBanProvider().syncSave();
-                player.sendMessage(Message.translation("server.modules.unban.success").param("name", uuid.toString()));
+                playerRef.sendMessage(Message.translation("server.modules.unban.success").param("name", uuid.toString()));
                 this.requestingConfirmation = -1;
             }
             UICommandBuilder commandBuilder = new UICommandBuilder();
@@ -131,9 +131,9 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
     private void attemptToKickPlayerIfPresent(Ban ban, PlayerRef context, String username, String reason){
         PlayerRef player = Universe.get().getPlayer(ban.getTarget());
         if (player != null) {
-            var disconnectReason = "Failed to get disconnect reason.";
+            var disconnectReason = Message.raw("Failed to get disconnect reason.");
             try {
-                disconnectReason = ban.getDisconnectReason(ban.getTarget()).get().orElse("Failed to get disconnect reason.");
+                disconnectReason = ban.getDisconnectReason(ban.getTarget()).get().orElse(Message.raw("Failed to get disconnect reason."));
             } catch (InterruptedException | ExecutionException e) {
                 context.sendMessage(Message.translation("server.modules.ban.failedDisconnectReason").param("name", username));
                 e.printStackTrace();

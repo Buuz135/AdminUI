@@ -1,8 +1,6 @@
 package com.buuz135.adminui.gui;
 
 
-import com.buuz135.adminui.AdminUI;
-import com.hypixel.hytale.builtin.adventure.teleporter.TeleporterPlugin;
 import com.hypixel.hytale.builtin.teleport.TeleportPlugin;
 import com.hypixel.hytale.builtin.teleport.Warp;
 import com.hypixel.hytale.builtin.teleport.components.TeleportHistory;
@@ -12,8 +10,7 @@ import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.math.vector.Rotation3f;
 import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.server.core.Message;
@@ -27,6 +24,8 @@ import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -35,8 +34,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 public class WarpGui extends InteractiveCustomUIPage<WarpGui.SearchGuiData> {
 
@@ -107,8 +104,8 @@ public class WarpGui extends InteractiveCustomUIPage<WarpGui.SearchGuiData> {
                 HeadRotation headRotationComponent = (HeadRotation)store.getComponent(ref, HeadRotation.getComponentType());
                 assert headRotationComponent != null;
                 Vector3d playerPosition = transformComponent.getPosition();
-                Vector3f playerHeadRotation = headRotationComponent.getRotation();
-                store.ensureAndGetComponent(ref, TeleportHistory.getComponentType()).append(player.getWorld(), playerPosition.clone(), playerHeadRotation.clone(), "Warp '" + warp + "'");
+                Rotation3f playerHeadRotation = headRotationComponent.getRotation();
+                store.ensureAndGetComponent(ref, TeleportHistory.getComponentType()).append(player.getWorld(), new Vector3d(playerPosition), playerHeadRotation.clone(), "Warp '" + warp + "'");
                 store.addComponent(ref, Teleport.getComponentType(), warp.toTeleport());
                 playerRef.sendMessage(Message.translation("commands.teleport.warp.warpedTo").param("name", warp.getId()));
                 return;
@@ -182,9 +179,9 @@ public class WarpGui extends InteractiveCustomUIPage<WarpGui.SearchGuiData> {
             eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#IndexCards[" + i + "] #GoButton", EventData.of("Button", "Go:" + warpEntry.getValue().getId()), false);
 
             uiCommandBuilder.set("#IndexCards[" + i + "] #WorldValue.Text", warpEntry.getValue().getWorld());
-            uiCommandBuilder.set("#IndexCards[" + i + "] #XValue.Text", (int) warpEntry.getValue().getTransform().getPosition().getX() +"");
-            uiCommandBuilder.set("#IndexCards[" + i + "] #YValue.Text", (int) warpEntry.getValue().getTransform().getPosition().getY() +"");
-            uiCommandBuilder.set("#IndexCards[" + i + "] #ZValue.Text", (int) warpEntry.getValue().getTransform().getPosition().getZ() +"");
+            uiCommandBuilder.set("#IndexCards[" + i + "] #XValue.Text", (int) warpEntry.getValue().getTransform().getPosition().x() +"");
+            uiCommandBuilder.set("#IndexCards[" + i + "] #YValue.Text", (int) warpEntry.getValue().getTransform().getPosition().y() +"");
+            uiCommandBuilder.set("#IndexCards[" + i + "] #ZValue.Text", (int) warpEntry.getValue().getTransform().getPosition().z() +"");
 
             if (this.requestingConfirmation == i) {
                 uiCommandBuilder.set("#IndexCards[" + i + "] #RemoveWarpButton.Text", "Are you sure?");

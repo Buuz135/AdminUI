@@ -1,3 +1,7 @@
+# 1.0.7
+
+* Updated to version 0.5.0
+
 # 1.0.6
 
 * Fixed gamemode dropdown targetting the wrong person, closes #18

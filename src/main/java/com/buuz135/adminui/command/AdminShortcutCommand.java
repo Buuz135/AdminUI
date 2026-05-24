@@ -25,7 +25,7 @@ public class AdminShortcutCommand extends AbstractAsyncCommand {
 
     public AdminShortcutCommand(AdminUIIndexRegistry.Entry entry) {
         super(entry.commandShortcut()[0], entry.displayName());
-        this.setPermissionGroup(GameMode.Creative);
+        this.setPermissionGroups("hytale:WorldEditor");
         this.entry = entry;
         if (entry.commandShortcut().length > 1) {
             for (int i = 1; i < entry.commandShortcut().length; i++) {
@@ -39,16 +39,15 @@ public class AdminShortcutCommand extends AbstractAsyncCommand {
     @Override
     protected CompletableFuture<Void> executeAsync(CommandContext commandContext) {
         CommandSender sender = commandContext.sender();
-        if (sender instanceof Player player) {
-            player.getWorldMapTracker().tick(0);
-            Ref<EntityStore> ref = player.getReference();
+        if (sender instanceof PlayerRef playerRef) {
+            Ref<EntityStore> ref = playerRef.getReference();
             if (ref != null && ref.isValid()) {
                 Store<EntityStore> store = ref.getStore();
                 World world = store.getExternalData().getWorld();
                 return CompletableFuture.runAsync(() -> {
-                    PlayerRef playerRefComponent = store.getComponent(ref, PlayerRef.getComponentType());
-                    if (playerRefComponent != null) {
-                        player.getPageManager().openCustomPage(ref, store, entry.guiSupplier().apply(playerRefComponent));
+                    Player player = store.getComponent(ref, Player.getComponentType());
+                    if (player != null) {
+                        player.getPageManager().openCustomPage(ref, store, entry.guiSupplier().apply(playerRef));
                     }
                 }, world);
             } else {

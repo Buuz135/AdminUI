@@ -49,6 +49,6 @@ public enum PermissionList {
     }
 
     public Boolean hasPermission(Player player){
-        return player.hasPermission(this.getPermission()) || player.hasPermission(this.getPermissionRoot()) || player.hasPermission("AdminUI.admin");
+        return player.getPlayerRef().hasPermission(this.getPermission()) || player.getPlayerRef().hasPermission(this.getPermissionRoot()) || player.getPlayerRef().hasPermission("AdminUI.admin");
     }
 }
