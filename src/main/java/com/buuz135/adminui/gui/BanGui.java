@@ -16,8 +16,8 @@ import com.hypixel.hytale.server.core.auth.ProfileServiceClient;
 import com.hypixel.hytale.server.core.entity.UUIDComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
+import com.hypixel.hytale.server.core.modules.accesscontrol.AccessControlModule;
 import com.hypixel.hytale.server.core.modules.accesscontrol.ban.Ban;
-import com.hypixel.hytale.server.core.modules.accesscontrol.ban.InfiniteBan;
 import com.hypixel.hytale.server.core.ui.builder.EventData;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
@@ -78,10 +78,10 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
                 if (profile == null){
                     return;
                 }
-                var ban = new InfiniteBan(profile.getUuid(), store.getComponent(ref, UUIDComponent.getComponentType()).getUuid(), Instant.now(), reasonField);
-                if (AdminUI.getInstance().getBanProvider().modify(uuids -> {uuids.put(profile.getUuid(), ban);return true;})) {
+                var ban = new Ban(profile.getUuid(), store.getComponent(ref, UUIDComponent.getComponentType()).getUuid(), Instant.now(), null, reasonField);
+                if (AccessControlModule.get().ban(ban)) {
                     AdminUI.getInstance().getPlayerTracker().addPlayer(profile.getUsername(), profile.getUuid());
-                    AdminUI.getInstance().getBanProvider().syncSave();
+                    AdminUI.getInstance().getBanProvider().save();
                     playerRef.sendMessage(Message.translation("server.modules.ban.bannedWithReason").param("name", this.inputField).param("reason", this.reasonField));
                     attemptToKickPlayerIfPresent(ban, playerRef, this.inputField, this.reasonField);
                     UICommandBuilder commandBuilder = new UICommandBuilder();
@@ -108,8 +108,8 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
             }
             if (action.equals("Delete")){
                 var uuid = UUID.fromString(split[1]);
-                AdminUI.getInstance().getBanProvider().modify(uuids -> uuids.remove(uuid) != null);
-                AdminUI.getInstance().getBanProvider().syncSave();
+                AdminUI.getInstance().getBanProvider().removeBan(uuid);
+                AdminUI.getInstance().getBanProvider().save();
                 playerRef.sendMessage(Message.translation("server.modules.unban.success").param("name", uuid.toString()));
                 this.requestingConfirmation = -1;
             }
@@ -131,13 +131,7 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
     private void attemptToKickPlayerIfPresent(Ban ban, PlayerRef context, String username, String reason){
         PlayerRef player = Universe.get().getPlayer(ban.getTarget());
         if (player != null) {
-            var disconnectReason = Message.raw("Failed to get disconnect reason.");
-            try {
-                disconnectReason = ban.getDisconnectReason(ban.getTarget()).get().orElse(Message.raw("Failed to get disconnect reason."));
-            } catch (InterruptedException | ExecutionException e) {
-                context.sendMessage(Message.translation("server.modules.ban.failedDisconnectReason").param("name", username));
-                e.printStackTrace();
-            }
+            var disconnectReason = ban.getDisconnectReason();;
             player.getPacketHandler().disconnect(disconnectReason);
             context.sendMessage(Message.translation("server.modules.ban.bannedWithReason").param("name", username).param("reason", reason));
         }
@@ -147,10 +141,9 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
         HashMap<Ban, String> itemList = new HashMap<>();
 
         HashMap<UUID, Ban> bans = new HashMap<>();
-        AdminUI.getInstance().getBanProvider().modify(uuidBanMap -> {
-            bans.putAll(uuidBanMap);
-            return false;
-        });
+        for (Ban ban : AdminUI.getInstance().getBanProvider().getBans()) {
+            bans.put(ban.getTarget(), ban);
+        }
         for (Ban ban : bans.values()) {
             var tracker = AdminUI.getInstance().getPlayerTracker().getPlayer(ban.getTarget());
             itemList.put(ban, tracker == null ? "Unknown" : tracker.name());
@@ -170,7 +163,7 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
                     visibleItems.put(entry.getKey(), entry.getValue());
                     continue;
                 }
-                if (entry.getKey().getReason().orElse("").toLowerCase().contains(this.searchQuery.toLowerCase())) {
+                if (entry.getKey().getReason() != null && entry.getKey().getReason().toLowerCase().contains(this.searchQuery.toLowerCase())) {
                     visibleItems.put(entry.getKey(), entry.getValue());
                     continue;
                 }
@@ -192,7 +185,7 @@ public class BanGui extends InteractiveCustomUIPage<BanGui.SearchGuiData> {
             uiCommandBuilder.append("#IndexCards", "Pages/Ban/Buuz135_AdminUI_BanEntry.ui");
             uiCommandBuilder.set("#IndexCards[" + i + "] #MemberName.Text", name.getValue());
             uiCommandBuilder.set("#IndexCards[" + i + "] #MemberUUID.Text", name.getKey().getTarget().toString());
-            uiCommandBuilder.set("#IndexCards[" + i + "] #MemberReason.Text",  name.getKey().getReason().orElse("No reason provided"));
+            uiCommandBuilder.set("#IndexCards[" + i + "] #MemberReason.Text",  name.getKey().getReason() != null ?  name.getKey().getReason() : "No reason provided");
             var playerTracker = AdminUI.getInstance().getPlayerTracker().getPlayer(name.getKey().getBy());
             uiCommandBuilder.set("#IndexCards[" + i + "] #MemberBy.Text",  (playerTracker == null ? "Unknown" : playerTracker.name()));
 

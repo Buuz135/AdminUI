@@ -16,6 +16,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.auth.ProfileServiceClient;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
+import com.hypixel.hytale.server.core.modules.accesscontrol.AccessControlModule;
 import com.hypixel.hytale.server.core.ui.builder.EventData;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
@@ -50,7 +51,7 @@ public class WhitelistGui extends InteractiveCustomUIPage<WhitelistGui.SearchGui
         uiEventBuilder.addEventBinding(CustomUIEventBindingType.ValueChanged, "#WhitelistSetting #CheckBox", EventData.of("Button", "WhitelistSetting"), false);
         uiEventBuilder.addEventBinding(CustomUIEventBindingType.ValueChanged, "#NewWhitelistField", EventData.of("@InputField", "#NewWhitelistField.Value"), false);
         uiEventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#AddToWhitelistButton", EventData.of("Button", "AddMemberButton"), false);
-        uiCommandBuilder.set("#WhitelistSetting #CheckBox.Value", AdminUI.getInstance().getWhitelistProvider().isEnabled());
+        uiCommandBuilder.set("#WhitelistSetting #CheckBox.Value", AccessControlModule.get().isJoinPermissionRequired());
         this.buildList(ref, uiCommandBuilder, uiEventBuilder, store);
     }
 
@@ -68,9 +69,8 @@ public class WhitelistGui extends InteractiveCustomUIPage<WhitelistGui.SearchGui
                 return;
             }
             if (data.button.equals("WhitelistSetting")) {
-                AdminUI.getInstance().getWhitelistProvider().setEnabled(!AdminUI.getInstance().getWhitelistProvider().isEnabled());
-                AdminUI.getInstance().getWhitelistProvider().syncSave();
-                if (AdminUI.getInstance().getWhitelistProvider().isEnabled()){
+                AccessControlModule.get().setJoinPermissionRequired(!AccessControlModule.get().isJoinPermissionRequired());
+                if (AccessControlModule.get().isJoinPermissionRequired()){
                     playerRef.sendMessage(Message.translation("server.modules.whitelist.enabled"));
                 } else {
                     playerRef.sendMessage(Message.translation("server.modules.whitelist.disabled"));
@@ -82,8 +82,7 @@ public class WhitelistGui extends InteractiveCustomUIPage<WhitelistGui.SearchGui
                 if (profile == null){
                     return;
                 }
-                if (AdminUI.getInstance().getWhitelistProvider().modify(uuids -> uuids.add(profile.getUuid()))) {
-                    AdminUI.getInstance().getWhitelistProvider().syncSave();
+                if (AccessControlModule.get().allowJoin(profile.getUuid())) {
                     AdminUI.getInstance().getPlayerTracker().addPlayer(profile.getUsername(), profile.getUuid());
                     playerRef.sendMessage(Message.translation("server.modules.whitelist.addSuccess").param("name", this.inputField));
                     UICommandBuilder commandBuilder = new UICommandBuilder();
@@ -110,8 +109,7 @@ public class WhitelistGui extends InteractiveCustomUIPage<WhitelistGui.SearchGui
             }
             if (action.equals("Delete")){
                 var uuid = UUID.fromString(split[1]);
-                AdminUI.getInstance().getWhitelistProvider().modify(uuids -> uuids.remove(uuid));
-                AdminUI.getInstance().getWhitelistProvider().syncSave();
+                AccessControlModule.get().disallowJoin(uuid);
                 playerRef.sendMessage(Message.translation("server.modules.whitelist.removalSuccess").param("uuid", uuid.toString()));
                 this.requestingConfirmation = -1;
             }
@@ -133,7 +131,7 @@ public class WhitelistGui extends InteractiveCustomUIPage<WhitelistGui.SearchGui
     private void buildList(@Nonnull Ref<EntityStore> ref, @Nonnull UICommandBuilder commandBuilder, @Nonnull UIEventBuilder eventBuilder, @Nonnull ComponentAccessor<EntityStore> componentAccessor) {
         HashMap<UUID, String> itemList = new HashMap<>();
 
-        for (UUID uuid : AdminUI.getInstance().getWhitelistProvider().getList()) {
+        for (UUID uuid : AccessControlModule.get().getUsersWithJoinGrant()) {
             var tracker = AdminUI.getInstance().getPlayerTracker().getPlayer(uuid);
             itemList.put(uuid, tracker == null ? "Unknown" :tracker.name());
         }

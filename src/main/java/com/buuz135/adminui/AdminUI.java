@@ -16,8 +16,7 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.player.PlayerChatEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
 import com.hypixel.hytale.server.core.modules.accesscontrol.AccessControlModule;
-import com.hypixel.hytale.server.core.modules.accesscontrol.provider.HytaleBanProvider;
-import com.hypixel.hytale.server.core.modules.accesscontrol.provider.HytaleWhitelistProvider;
+import com.hypixel.hytale.server.core.modules.accesscontrol.provider.BanProvider;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
@@ -43,8 +42,6 @@ public class AdminUI extends JavaPlugin {
         return INSTANCE;
     }
 
-    private HytaleWhitelistProvider whitelistProvider;
-    private HytaleBanProvider banProvider;
     private PlayerTracker playerTracker;
     private AdminStickCustomConfig adminStickCustomConfig;
     private MuteTracker muteTracker;
@@ -88,11 +85,6 @@ public class AdminUI extends JavaPlugin {
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("admin-stick", "Admin Stick", PermissionList.ADMIN_STICK_OPEN_UI, AdminStickGui::new, true));
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("backup", "Server Backups", PermissionList.BACKUP_OPEN_UI, BackupGui::new, true, "bk", "backup"));
         AdminUIIndexRegistry.getInstance().register(new AdminUIIndexRegistry.Entry("server", "Server Stats", PermissionList.STATS_OPEN_UI, StatsGui::new, true, "st", "stats"));
-
-        //PROVIDERS
-        this.whitelistProvider = ReflectionUtil.getPublic(HytaleWhitelistProvider.class, AccessControlModule.get(), "whitelistProvider");
-        this.banProvider = ReflectionUtil.getPublic(HytaleBanProvider.class, AccessControlModule.get(), "banProvider");
-        if (whitelistProvider == null || banProvider == null) throw new RuntimeException("Could not find Hytale Access Control Module");
 
 
         this.getEventRegistry().register(LoadedAssetsEvent.class, ModelAsset.class, AdminUI::onModelAssetLoad);
@@ -144,12 +136,8 @@ public class AdminUI extends JavaPlugin {
         this.muteTracker.syncSave();
     }
 
-    public HytaleBanProvider getBanProvider() {
-        return banProvider;
-    }
-
-    public HytaleWhitelistProvider getWhitelistProvider() {
-        return whitelistProvider;
+    public BanProvider getBanProvider() {
+        return AccessControlModule.get().getBanProvider();
     }
 
     public PlayerTracker getPlayerTracker() {

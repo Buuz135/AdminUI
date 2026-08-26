@@ -24,14 +24,11 @@ import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCu
 import com.hypixel.hytale.server.core.entity.entities.player.windows.ContainerWindow;
 import com.hypixel.hytale.server.core.entity.entities.player.windows.Window;
 import com.hypixel.hytale.server.core.inventory.container.CombinedItemContainer;
-import com.hypixel.hytale.server.core.inventory.container.DelegateItemContainer;
 import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
-import com.hypixel.hytale.server.core.inventory.container.filter.FilterType;
 import com.hypixel.hytale.server.core.io.PacketHandler;
+import com.hypixel.hytale.server.core.modules.accesscontrol.AccessControlModule;
 import com.hypixel.hytale.server.core.modules.accesscontrol.ban.Ban;
-import com.hypixel.hytale.server.core.modules.accesscontrol.ban.InfiniteBan;
 import com.hypixel.hytale.server.core.modules.entity.component.ModelComponent;
-import com.hypixel.hytale.server.core.modules.entity.component.PositionDataComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
@@ -235,7 +232,7 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
             uiCommandBuilder.set("#IndexCards[" + i + "] #MemberUUID.Text", uuid.toString());
             uiCommandBuilder.set("#IndexCards[" + i + "] #Ping.Text", "Ping: "+ FormatUtil.simpleTimeUnitFormat((long) playerRef.getPacketHandler().getPingInfo(PongType.Raw).getPingMetricSet().getAverage(0), PacketHandler.PingInfo.TIME_UNIT, 0));
             uiCommandBuilder.set("#IndexCards[" + i + "] #IsOp.Visible", perms.getGroupsForUser(uuid).contains("OP"));
-            uiCommandBuilder.set("#IndexCards[" + i + "] #IsWhitelisted.Visible", AdminUI.getInstance().getWhitelistProvider().getList().contains(uuid));
+            uiCommandBuilder.set("#IndexCards[" + i + "] #IsWhitelisted.Visible", AccessControlModule.get().isAllowedToJoin(uuid));
             uiCommandBuilder.set("#IndexCards[" + i + "] #HealthValue.Text", ((int)entityStatMap.get(health).asPercentage() * 100) + "%" );
             uiCommandBuilder.set("#IndexCards[" + i + "] #WorldValue.Text", player != null && player.getWorld() != null ? player.getWorld().getName() : "Unknown");
             uiCommandBuilder.set("#IndexCards[" + i + "] #XValue.Text", (int) position.getPosition().x() +"");
@@ -323,8 +320,8 @@ public class PlayerGui extends InteractiveCustomUIPage<PlayerGui.SearchGuiData> 
         var store = entity.getReference().getStore();
         var ref = entity.getReference();
 
-        var ban = new InfiniteBan(uuid, ownerStore.getComponent(this.playerRef.getReference(), UUIDComponent.getComponentType()).getUuid(), Instant.now(), "You were banned by an admin.");
-        if (AdminUI.getInstance().getBanProvider().modify(uuids -> {uuids.put(uuid, ban);return true;})) {
+        var ban = new Ban(uuid, ownerStore.getComponent(this.playerRef.getReference(), UUIDComponent.getComponentType()).getUuid(), Instant.now(), null,"You were banned by an admin.");
+        if (AdminUI.getInstance().getBanProvider().addBan(ban)) {
             var playerRef = store.getComponent(ref, PlayerRef.getComponentType());
             playerRef.getPacketHandler().disconnect(Message.raw("You were kicked by an admin."));
         }
